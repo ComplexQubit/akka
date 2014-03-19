@@ -269,7 +269,10 @@ abstract class SurviveNetworkInstabilitySpec
         for (_ ← 1 to sysMsgBufferSize + 1) {
           // remote deployment to third
           parent ! Props[RemoteChild]
-          val child = expectMsgType[ActorRef]
+          val child = receiveOne(remainingOrDefault) match {
+            case a: ActorRef ⇒ a
+            case other       ⇒ fail(s"expected ActorRef, got $other")
+          }
           child ! "hello"
           expectMsg("hello")
           lastSender.path.address should be(address(third))
